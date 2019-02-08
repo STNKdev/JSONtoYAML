@@ -2,8 +2,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.util.Scanner;
+import java.io.InputStreamReader;
 import java.io.IOException;
 
 public class JSONtoYAML {
@@ -13,40 +14,42 @@ public class JSONtoYAML {
         String pathIn;
         String pathOut;
 
-        if (args.length == 2) {
-            pathIn = checkPath(new Scanner(args[0]));
-            pathOut = checkPath(new Scanner(args[1]));
-        } else if (args.length == 1) {
-            pathIn = checkPath(new Scanner(args[0]));
-            pathOut = "";
-        } else {
-            p("Введите путь к файлу JSON:");
-            pathIn = checkPath(new Scanner(System.in));
-            p("Введите куда сохранить файл (нажатие Enter сохранит рядом с файлом JSON):");
-            pathOut = checkPath(new Scanner(System.in));
-        }
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
+            if (args.length == 2) {
+                pathIn = checkPath(args[0]);
+                pathOut = checkPath(args[1]);
+            } else if (args.length == 1) {
+                pathIn = checkPath(args[0]);
+                pathOut = "";
+            } else {
+                p("Введите путь к файлу JSON:");
+                pathIn = checkPath(br.readLine());
+                p("Введите куда сохранить файл (нажатие Enter сохранит рядом с файлом JSON):");
+                pathOut = checkPath(br.readLine());
+            }
 
-        convertJSONtoYAML(pathIn, pathOut);
+            convertJSONtoYAML(pathIn, pathOut);
+        } catch (IOException err) {
+            p("Ошибка: " + err);
+            err.printStackTrace();
+        }
 
     }
 
-    private static String checkPath (Scanner path) {
-        if (path.hasNextLine()) {
-
-            File file = new File(path.nextLine().trim());
-            if (file.isFile() && file.canRead()) {
-                p(file.getName().toLowerCase().endsWith(".json") ? "Является файлом JSON" : "Не является файлом JSON");
-                p("Имя файла: " + file.getName());
-                p("Путь: " + file.getParent());
-                p("Абсолютный путь: " + file.getAbsolutePath());
-                return file.getAbsolutePath();
-            } else if (file.isDirectory()) {
-                p("Директория: " + file.getPath());
-                return file.getAbsolutePath();
-            } else {
-                p("Пустое значение");
-                //p("Вы ввели: " + path.nextLine());
-            }
+    private static String checkPath (String path) {
+        File file = new File(path.trim());
+        if (file.isFile() && file.canRead()) {
+            p(file.getName().toLowerCase().endsWith(".json") ? "Является файлом JSON" : "Не является файлом JSON");
+            p("Имя файла: " + file.getName());
+            p("Путь: " + file.getParent());
+            p("Абсолютный путь: " + file.getAbsolutePath());
+            return file.getAbsolutePath();
+        } else if (file.isDirectory()) {
+            p("Директория: " + file.getPath());
+            return file.getAbsolutePath();
+        } else {
+            p("Пустое значение");
+            //p("Вы ввели: " + path.nextLine());
         }
 
         return "";
